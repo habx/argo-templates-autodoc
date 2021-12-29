@@ -1,0 +1,84 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: utils-jq
+  labels:
+    habx.io/created: "NA"
+    habx.io/revision: "NA"
+    habx.io/title: "NA"
+    habx.io/version: "NA"
+    habx.io/authors: "NA"
+spec:
+  templates:
+  - name: jq-rc
+    inputs:
+      parameters:
+      - name: version
+        default: "1.6"
+      - name: jq-key
+      - name: json
+    script:
+      image: alpine:3
+      command: [sh]
+      source: |
+        apk add --no-cache jq &>/dev/null
+        echo '{{inputs.parameters.json}}' | jq -rc '{{inputs.parameters.jq-key}}'
+      resources:
+        limits:
+          memory: 128Mi
+          cpu: 0.2
+
+  - name: jq-rc-to-file
+    inputs:
+      parameters:
+      - name: version
+        default: "1.6"
+      - name: jq-key
+      artifacts:
+        - name: data
+          path: /tmp/input/input.json
+    outputs:
+      artifacts:
+      - name: data
+        path: /tmp/output/output.json
+    script:
+      image: alpine:3
+      command: [sh]
+      source: |
+        apk add --no-cache jq
+        mkdir -p /tmp/input /tmp/output
+        cat /tmp/input/input.json
+        jq '{{inputs.parameters.jq-key}}' /tmp/input/input.json > /tmp/output/output.json
+        cat /tmp/output/output.json
+      resources:
+        limits:
+          memory: 128Mi
+          cpu: 0.2
+
+  - name: jq-merge-file-with-arg
+    inputs:
+      parameters:
+      - name: version
+        default: "1.6"
+      - name: jq-args
+      - name: jq-key
+      artifacts:
+        - name: data
+          path: /tmp/input/input.json
+    outputs:
+      artifacts:
+      - name: data
+        path: /tmp/output/output.json
+    script:
+      image: alpine:3
+      command: [sh]
+      source: |
+        apk add --no-cache jq
+        mkdir -p /tmp/input /tmp/output
+        cat /tmp/input/input.json
+        jq --arg {{inputs.parameters.jq-args}} '{{inputs.parameters.jq-key}}' /tmp/input/input.json > /tmp/output/output.json
+        cat /tmp/output/output.json
+      resources:
+        limits:
+          memory: 128Mi
+          cpu: 0.2

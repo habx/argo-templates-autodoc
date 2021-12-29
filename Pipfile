@@ -1,0 +1,13 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+python-markdown-generator = {editable = true, git = "https://github.com/Nicceboy/python-markdown-generator"}
+pyyaml = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
